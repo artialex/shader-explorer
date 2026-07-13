@@ -1,0 +1,12 @@
+.root {
+    display: flex;
+    flex-direction: column;
+
+    .handle {
+        position: relative;
+
+        :global(.handle) {
+            left: -5%;
+        }
+    }
+}

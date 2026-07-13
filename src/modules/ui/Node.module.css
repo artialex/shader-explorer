@@ -1,0 +1,8 @@
+.root {
+    z-index: 99;
+    min-width: 80px;
+
+    .content {
+        padding: 4px;
+    }
+}

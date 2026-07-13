@@ -1,0 +1,17 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "shader-explorer-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev", "--", "--port", "5199"],
+      "port": 5199
+    },
+    {
+      "name": "shader-explorer-storybook",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "storybook", "--", "--port", "6006"],
+      "port": 6006
+    }
+  ]
+}

@@ -1,0 +1,13 @@
+.root {
+    background-color: white;
+}
+.controls {
+    position: absolute;
+    z-index: 999;
+    opacity: 0;
+    transition: 0.2s opacity;
+
+    .root:hover & {
+        opacity: 1;
+    }
+}

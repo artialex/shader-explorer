@@ -1,0 +1,10 @@
+.root {
+    border-top: 2px solid var(--node-color, rgba(250, 250, 250, 0.1));
+    background-color: var(--node-color, rgba(250, 250, 250, 1));
+    border-top-left-radius: var(--border-radius);
+    border-top-right-radius: var(--border-radius);
+    width: 100%;
+    padding: 0 4px;
+    font-weight: 400;
+    font-size: 12px;
+}
