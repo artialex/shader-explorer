@@ -1,0 +1,50 @@
+.root {
+    min-width: 120px;
+    border: 1px solid var(--node-color, lightgray);
+    border-radius: 4px;
+    background: #2d2d2d;
+    color: white;
+}
+
+.label {
+    padding: 4px;
+    border-bottom: 1px solid gray;
+}
+
+.inputs,
+.outputs {
+    border-bottom: 1px solid gray;
+    padding: 4px;
+    position: relative;
+}
+
+:global(.react-flow__handle) {
+    color: red;
+    width: 8px;
+    height: 8px;
+    border-radius: 25%;
+}
+
+.input {
+    position: relative;
+
+    :global(.react-flow__handle) {
+        left: -6px;
+    }
+}
+
+.output {
+    position: relative;
+
+    :global(.react-flow__handle) {
+        right: -6px;
+    }
+}
+
+.content {
+    aspect-ratio: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: pink;
+}

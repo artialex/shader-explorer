@@ -9,17 +9,19 @@ import { ImageFilterNode } from './ImageFilterNode/ImageFilterNode'
 import { NormalizeNode } from './NormalizeNode/NormalizeNode'
 import { FloatNode } from './FloatNode/FloatNode'
 import { VertexShaderOutputNode } from './VertexShaderOutputNode/VertexShaderOutputNode'
+import { MyNode } from '../ui/MyNode/MyNode'
 
 export const nodeTypes = {
   color: ColorNode,
-  output: OutputNode,
+  // output: OutputNode,
   number: NumberNode,
   colorPreview: ColorPreviewNode,
   log: LogNode,
   background: ColorBackgroundNode,
-  image: ImageNode,
-  imageFilter: ImageFilterNode,
+  // image: ImageNode,
+  // imageFilter: ImageFilterNode,
   normalize: NormalizeNode,
   float: FloatNode,
-  vertexShader: VertexShaderOutputNode,
+  // vertexShader: VertexShaderOutputNode,
+  node: MyNode,
 }

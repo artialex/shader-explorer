@@ -10,10 +10,11 @@ function CustomHandle({ id, label, onChange }) {
   })
 
   const nodeData = useNodesData(connections?.[0]?.source)
+  const value = nodeData?.data ? nodeData.data.value : 0
 
   useEffect(() => {
-    onChange(nodeData?.data ? nodeData.data.value : 0)
-  }, [nodeData])
+    onChange(value)
+  }, [value])
 
   return (
     <div className={css.handle}>
@@ -42,27 +43,33 @@ export function ColorPreviewNode({ id, data }) {
           id="red"
           label="R"
           onChange={(value) => {
-            updateNodeData(id, (node) => {
-              return { value: { ...node.data.value, r: value } }
-            })
+            if (data.value?.r !== value) {
+              updateNodeData(id, (node) => {
+                return { value: { ...node.data.value, r: value } }
+              })
+            }
           }}
         />
         <CustomHandle
           id="green"
           label="G"
           onChange={(value) => {
-            updateNodeData(id, (node) => {
-              return { value: { ...node.data.value, g: value } }
-            })
+            if (data.value?.g !== value) {
+              updateNodeData(id, (node) => {
+                return { value: { ...node.data.value, g: value } }
+              })
+            }
           }}
         />
         <CustomHandle
           id="blue"
           label="B"
           onChange={(value) => {
-            updateNodeData(id, (node) => {
-              return { value: { ...node.data.value, b: value } }
-            })
+            if (data.value?.b !== value) {
+              updateNodeData(id, (node) => {
+                return { value: { ...node.data.value, b: value } }
+              })
+            }
           }}
         />
         <Handle type="source" position={Position.Right} />

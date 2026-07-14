@@ -3,6 +3,7 @@ import { OrbitControls } from '@react-three/drei'
 import { Handle, Position, useNodeConnections, useNodesData, type NodeProps } from '@xyflow/react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import * as THREE from 'three'
+import { UI } from '../../ui'
 
 const vertexShader = /* glsl */ `
   uniform float uTime;
@@ -150,7 +151,7 @@ export function VertexShaderOutputNode({}: NodeProps) {
         overflow: 'hidden',
       }}
     >
-      <div style={{ padding: '8px 12px', borderBottom: '1px solid #444', fontWeight: 600 }}>Vertex Shader</div>
+      <div style={{ padding: '3px 6px', borderBottom: '1px solid #444', fontWeight: 600 }}>Vertex Shader</div>
 
       <div style={{ padding: '6px 12px', borderBottom: '1px solid #444' }}>
         <ParamHandle id="amplitude" label="amplitude" onChange={(v) => setAmplitude(v ?? 0.25)} />

@@ -10,10 +10,9 @@ export function NormalizeNode({ id, data }: NodeProps) {
 
   useEffect(() => {
     const value = nodeData?.data?.value
-    if (value != null) {
-      updateNodeData(id, { value: value / 255 })
-    } else {
-      updateNodeData(id, { value: null })
+    const next = value != null ? value / 255 : null
+    if (data.value !== next) {
+      updateNodeData(id, { value: next })
     }
   }, [nodeData])
 

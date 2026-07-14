@@ -1,0 +1,34 @@
+@font-face {
+    src: url('/fonts/NationalPark-VariableFont_wght.ttf');
+    font-family: NationalPark;
+}
+
+@font-face {
+    src: url('/fonts/mononoki-Regular.ttf');
+    font-family: Mononoki;
+}
+
+pre {
+    font-family: Mononoki;
+}
+
+:root {
+    --border-radius: 2px;
+}
+
+#app {
+    width: 100vw;
+    height: 100vh;
+}
+
+[data-type='math'] {
+    --node-color: rgba(170, 200, 230, 0.5);
+}
+
+[data-type='image'] {
+    --node-color: rgba(250, 230, 250, 0.5);
+}
+
+[data-type='log'] {
+    --node-color: rgba(215, 215, 215, 0.5);
+}

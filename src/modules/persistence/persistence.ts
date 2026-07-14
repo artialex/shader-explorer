@@ -8,12 +8,12 @@ interface State {
 
 const KEY = '__my-flow'
 
-export function save(state: State) {
-  localStorage.setItem(KEY, JSON.stringify(state))
+export function save(state: State, key = KEY) {
+  localStorage.setItem(key, JSON.stringify(state))
 }
 
-export function load() {
-  const saved = localStorage.getItem(KEY)
+export function load(key = KEY) {
+  const saved = localStorage.getItem(key)
 
   if (!saved) return initialState
 

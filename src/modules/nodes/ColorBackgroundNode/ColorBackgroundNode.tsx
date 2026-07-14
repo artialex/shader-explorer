@@ -1,9 +1,10 @@
-import { Handle, Position, useNodeConnections, useNodesData, type NodeProps } from '@xyflow/react'
+import { Handle, Position, useNodeConnections, useNodesData, type Node, type NodeProps } from '@xyflow/react'
 import { UI } from '../../ui'
 import { useEffect } from 'react'
+import { InputHandle, MyNode } from '../../ui/MyNode/MyNode'
 
-export function ColorBackgroundNode({ id }: NodeProps) {
-  const inputs = useNodeConnections({ handleType: 'target', handleId: id })
+export function ColorBackgroundNode() {
+  const inputs = useNodeConnections({ handleType: 'target' })
   const nodeData = useNodesData(inputs?.[0]?.source)
 
   useEffect(() => {
@@ -21,9 +22,11 @@ export function ColorBackgroundNode({ id }: NodeProps) {
       document.body.style.background = ''
     }
   }, [nodeData])
-  return (
-    <UI.Node label="Background" noPadding>
-      <Handle type="target" position={Position.Left} id={id} className="handle" />
-    </UI.Node>
-  )
+
+  return <MyNode label="Background Color" data-type="color" inputs={[<InputHandle>In</InputHandle>]} />
+}
+// <Handle type="target" position={Position.Left} className="handle" />
+
+function ColorHandle() {
+  return
 }

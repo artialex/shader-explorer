@@ -1,34 +1,31 @@
-import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { useReactFlow, type Node, type NodeProps } from '@xyflow/react'
+import { MyNode, OutputHandle } from '../../ui/MyNode/MyNode'
+import { ColorPicker } from '@mantine/core'
+import { memo, useCallback } from 'react'
+import { throttle } from 'lodash'
 
-export function ColorNode({ data }: NodeProps<{ color: string }>) {
+type ColorNode = Node<{ value: string }, 'color'>
+
+export const ColorNode = memo(({ id, data }: NodeProps<ColorNode>) => {
+  const { updateNodeData } = useReactFlow()
+  const handleChange = useCallback(
+    throttle((value) => updateNodeData(id, { value }), 16),
+    [],
+  )
+
   return (
-    <div
-      style={{
-        // width: 260,
-        border: "1px solid #444",
-        borderRadius: 8,
-        background: "#2d2d2d",
-        color: "white",
-        overflow: "hidden",
-      }}
-    >
-      <div
-        style={{
-          padding: "8px 12px",
-          borderBottom: "1px solid #444",
-          fontWeight: 600,
-        }}
-      >
-        Color
-      </div>
-      <input
-        type="color"
-        value={data.color}
-        onChange={(e) => {
-          data.color = e.target.value;
-        }}
-      />
-      <Handle type="source" position={Position.Right} />
-    </div>
-  );
-}
+    <MyNode
+      label="Color"
+      outputs={[
+        <OutputHandle id={id}>
+          <ColorPicker
+            className="nodrag"
+            value={data.value}
+
+            onChange={handleChange}
+          />
+        </OutputHandle>,
+      ]}
+    />
+  )
+})

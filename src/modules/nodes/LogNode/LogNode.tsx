@@ -1,27 +1,30 @@
-import { Handle, Position, useNodeConnections, useNodesData, useReactFlow, type NodeProps } from '@xyflow/react'
+import { useNodeConnections, useNodesData, useReactFlow, type NodeProps } from '@xyflow/react'
 import { UI } from '../../ui'
 import css from './LogNode.module.css'
-import { useEffect } from 'react'
+import { MyNode } from '../../ui/MyNode/MyNode'
+import { memo, useEffect } from 'react'
+import { ValueInputHandle, ValueOutputHandle } from '../../handles/ValueHandle'
 
-export function LogNode({ id }: NodeProps) {
+export const LogNode = memo(({ id, data }: NodeProps) => {
   const { updateNodeData } = useReactFlow()
-
   const inputs = useNodeConnections({
     handleType: 'target',
   })
-  const nodeData = useNodesData(inputs?.[0]?.source)
+
+  const nodeData = useNodesData(inputs[0]?.source)
+  const value = nodeData?.data?.value
+
+  const view = value != null ? JSON.stringify(value, null, 2) : 'No Input'
 
   useEffect(() => {
-    updateNodeData(id, { value: nodeData?.data?.value })
-  }, [nodeData])
-
-  const view = nodeData?.data?.value != null ? JSON.stringify(nodeData?.data?.value, null, 2) : 'No Input'
+    if (data.value === value) return
+    const frame = requestAnimationFrame(() => {
+      updateNodeData(id, { value })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [value])
 
   return (
-    <UI.Node data-type="log" label="Log" style={{ background: nodeData?.data?.value != null ? 'initial' : 'pink' }}>
-      <Handle type="target" position={Position.Left} className="handle" />
-      <pre className={css.pre}>{view}</pre>
-      <Handle type="source" position={Position.Right} className="handle" />
-    </UI.Node>
+    <MyNode data-type="log" label="Log" inputs={[<ValueInputHandle view={view} />]} outputs={[<ValueOutputHandle />]} />
   )
-}
+})

@@ -1,37 +1,21 @@
-import { Handle, Position, useReactFlow } from '@xyflow/react'
-import { throttle } from 'lodash'
-import { useCallback, useEffect, useState } from 'react'
-import { Slider } from '@mantine/core'
-import { UI } from '../../ui'
-import { clamp } from '@mantine/hooks'
+import { useReactFlow, type Node, type NodeProps } from '@xyflow/react'
+import { useState } from 'react'
 
-export function NumberNode({ id, data }) {
+import { clamp } from '@mantine/hooks'
+import { MyNode, SliderHandle } from '../../ui/MyNode/MyNode'
+
+type NumberNode = Node<{ value: number }, 'number'>
+
+export function NumberNode({ id, data }: NodeProps<NumberNode>) {
   const { updateNodeData } = useReactFlow()
 
-  const [number, setNumber] = useState(data?.value ?? 0)
+  const [value, setValue] = useState(data?.value ?? 0)
 
-  useEffect(() => {
-    if (data?.value !== undefined) {
-      setNumber(data.value)
-    }
-  }, [data?.value]) // Only run when the specific value in your saved state changes
+  const onChange = (value: number) => {
+    const cappedNumber = clamp(value, 0, 255)
+    updateNodeData(id, { value: cappedNumber })
+    setValue(cappedNumber)
+  }
 
-  const onChange = useCallback(
-    throttle((value) => {
-      const cappedNumber = clamp(value, 0, 255)
-      setNumber(cappedNumber)
-      updateNodeData(id, { value: cappedNumber })
-    }, 16),
-    [id, updateNodeData], // Include proper dependencies
-  )
-
-  return (
-    <UI.Node
-      data-type="math"
-      label={<UI.Label onNameChange={(label) => updateNodeData(id, { label })}>{data.label}</UI.Label>}
-    >
-      <Slider size="sm" className="nodrag" value={number} mih={0} max={255} onChange={onChange} id={`number-${id}`} />
-      <Handle type="source" position={Position.Right} />
-    </UI.Node>
-  )
+  return <MyNode label="Number" data-type="math" outputs={[<SliderHandle value={value} onChange={onChange} />]} />
 }
