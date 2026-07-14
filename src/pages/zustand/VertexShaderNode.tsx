@@ -19,7 +19,6 @@ type VertexShaderNode = Node<
 export const VertexShaderNode = memo((props: NodeProps<VertexShaderNode>) => {
   const width = 300
   const height = 300
-  console.log(props.data)
 
   return (
     <MyNode
@@ -30,7 +29,12 @@ export const VertexShaderNode = memo((props: NodeProps<VertexShaderNode>) => {
       ]}
     >
       <div style={{ width, height }}>
-        <Canvas camera={{ position: [0.5, 0.5, 5], fov: 45 }}>
+        {/* R3F measures its container with getBoundingClientRect by default,
+            which includes React Flow's zoom transform — inside a zoomed node
+            that reports a shrunk size, so the canvas renders undersized and
+            pinned to the corner instead of centered. offsetSize switches the
+            measurement to offsetWidth/offsetHeight, which ignore transforms. */}
+        <Canvas resize={{ offsetSize: true }} camera={{ position: [0.5, 0.5, 5], fov: 45 }}>
           <Scene {...props} />
           <axesHelper />
         </Canvas>

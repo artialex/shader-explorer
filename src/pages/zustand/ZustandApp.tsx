@@ -62,6 +62,7 @@ export function ZustandApp() {
       <Panel position="top-right">
         <Button
           onClick={() => {
+            console.log(nodes, edges)
             save({ nodes, edges }, '__zustand')
           }}
         >
@@ -71,6 +72,7 @@ export function ZustandApp() {
         <Button
           onClick={() => {
             const { nodes, edges } = load('__zustand')
+            console.log(nodes)
             setNodes(nodes)
             setEdges(edges)
           }}

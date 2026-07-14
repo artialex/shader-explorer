@@ -1,6 +1,6 @@
 import { Slider } from '@mantine/core'
 import { type Node, type NodeProps } from '@xyflow/react'
-import { memo, useCallback, useEffect, useReducer, useRef } from 'react'
+import { memo, useCallback, useRef } from 'react'
 import { type Vector3Like } from 'three'
 import { MyNode, OutputHandle } from '../../modules/ui/MyNode/MyNode'
 import { useStore } from './store'
@@ -32,16 +32,13 @@ interface Vector3Props {
   value: Vector3Like
   onChange: (value: Vector3Like) => void
 }
-
+const axes = ['x', 'y', 'z'] as const
 export function Vector3Handle(props: Vector3Props) {
-  const [value, dispatch] = useReducer(vectorReducer, props.value)
+  const value = props.value
 
-  useEffect(() => {
-    props.onChange(value)
-  }, [value])
   return (
     <OutputHandle>
-      {(['x', 'y', 'z'] as const).map((axis) => (
+      {axes.map((axis) => (
         <Slider
           key={axis}
           size="xs"
@@ -51,30 +48,10 @@ export function Vector3Handle(props: Vector3Props) {
           step={0.1}
           value={value[axis]}
           onChange={(newValue) => {
-            dispatch({ type: `set_${axis}`, payload: newValue })
+            props.onChange({ ...value, [axis]: newValue })
           }}
         />
       ))}
     </OutputHandle>
   )
-}
-
-type State = Vector3Like
-
-type Action =
-  | { type: 'set_x'; payload: number }
-  | { type: 'set_y'; payload: number }
-  | { type: 'set_z'; payload: number }
-
-function vectorReducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'set_x':
-      return { ...state, x: action.payload }
-    case 'set_y':
-      return { ...state, y: action.payload }
-    case 'set_z':
-      return { ...state, z: action.payload }
-    default:
-      return state
-  }
 }

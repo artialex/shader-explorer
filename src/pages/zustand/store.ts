@@ -72,28 +72,39 @@ const initialNodes = [
     id: 'vertex-shader-1',
     type: 'vertexShader',
     position: { x: 450, y: 0 },
-    data: {},
+    data: {
+      value: {
+        cameraPosition: { x: 0, y: 1, z: 1 },
+        boxPosition: { x: 0, y: 1, z: 1 },
+      },
+    },
   },
 ]
 
 const initialEdges = [
   { id: 'vector3-1-log-1', source: 'vector3-1', target: 'log-1' },
-  { id: 'log-1-vertex-shader-1', source: 'log-1', target: 'vertex-shader-1' },
+  { id: 'log-1-vertex-shader-1', source: 'log-1', target: 'vertex-shader-1', targetHandle: 'cameraPosition' },
   // { id: 'log-1-log-2', source: 'log-1', target: 'log-2' },
   // { id: 'log-2-log-3', source: 'log-2', target: 'log-3' },
   // { id: 'log-3-log-4', source: 'log-3', target: 'log-4' },
   // { id: 'log-4-log-5', source: 'log-4', target: 'log-5' },
 ]
 
-// Per-node-type logic: given a node and its incoming values, return its new value.
-function computeValue(node, inputValues) {
+// Per-node-type logic: given a node and its incoming values (keyed by the
+// *targetHandle* the edge is attached to — not connection order), return its
+// new value. React Flow reports a `null` targetHandle for a node with a
+// single unnamed handle, so we key that case under DEFAULT_HANDLE.
+const DEFAULT_HANDLE = '__default__'
+
+function computeValue(node, valuesByHandle) {
   switch (node.type) {
     case 'log':
-      return inputValues[0] ?? 0 // pass the input straight through unchanged
+      return valuesByHandle[DEFAULT_HANDLE] ?? 0 // pass the input straight through unchanged
     case 'vertexShader':
-      const [cameraPosition, boxPosition = { x: 0, y: 0, z: 0 }] = inputValues
-
-      return { cameraPosition, boxPosition }
+      return {
+        cameraPosition: valuesByHandle.cameraPosition ?? { x: 1, y: 1, z: 5 },
+        boxPosition: valuesByHandle.boxPosition ?? { x: 0, y: 0, z: 0 },
+      }
     default:
       return node.data.value // source nodes are set directly by the user
   }
@@ -188,12 +199,13 @@ export const useStore = create((set, get) => ({
       if (!currentNode) continue
 
       const incomingEdges = edges.filter((e) => e.target === currentId)
-      const inputValues = incomingEdges.map((e) => {
+      const valuesByHandle = {}
+      for (const e of incomingEdges) {
         const src = updated.get(e.source) ?? nodeMap.get(e.source)
-        return src?.data.value
-      })
+        valuesByHandle[e.targetHandle ?? DEFAULT_HANDLE] = src?.data.value
+      }
 
-      const newValue = computeValue(currentNode, inputValues)
+      const newValue = computeValue(currentNode, valuesByHandle)
       const changed = newValue !== currentNode.data.value
       if (changed) {
         updated.set(currentId, {
@@ -210,8 +222,26 @@ export const useStore = create((set, get) => ({
       }
     }
 
-    if (updated.size === 0) return
+    if (updated.size === 0) return false
 
     set({ nodes: nodes.map((n) => updated.get(n.id) ?? n) })
+    return true
+  },
+
+  // Computes every node's value from scratch — used once at startup (and
+  // safe to call after loading a saved flow) so nodes that are already
+  // wired up via edges don't sit with stale/empty data until the first
+  // user-driven update. A single recomputeNodes pass can miss a consumer
+  // that's listed before its upstream source (sources never register as
+  // "changed" since their value already matches, so they don't cascade),
+  // so this repeats until nothing changes, bounded by node count so a
+  // cyclic graph can't loop forever.
+  recomputeAll: () => {
+    const ids = get().nodes.map((n) => n.id)
+    for (let i = 0; i < ids.length; i++) {
+      if (!get().recomputeNodes(ids)) break
+    }
   },
 }))
+
+useStore.getState().recomputeAll()
