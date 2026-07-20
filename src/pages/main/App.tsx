@@ -1,107 +1,35 @@
-import {
-  addEdge,
-  ReactFlowProvider,
-  applyEdgeChanges,
-  applyNodeChanges,
-  ReactFlow,
-  useReactFlow,
-  Controls,
-  Panel,
-  useNodesState,
-  useEdgesState,
-} from '@xyflow/react'
-import { useCallback, useEffect, useRef, useState, type MouseEvent } from 'react'
-import '@xyflow/react/dist/style.css'
-import { debounce } from 'lodash'
-import { load, save } from '../../modules/persistence/persistence'
-import { initialState } from '../../modules/persistence/initial-state'
-import { nodeTypes } from '../../modules/nodes'
-import { UI } from '../../modules/ui'
-import { Button } from '@mantine/core'
+import { useState } from 'react'
+import { Tabs } from '@mantine/core'
+import { ReactFlowProvider } from '@xyflow/react'
+import { ZustandApp } from '../zustand/ZustandApp'
+import { TextEditorApp } from '../text-editor/TextEditorApp'
+
+type TabId = 'node-editor' | 'vertex-text-editor'
 
 export function App() {
-  return (
-    <ReactFlowProvider>
-      <Flow />
-    </ReactFlowProvider>
-  )
-}
-
-function Flow() {
-  const { screenToFlowPosition } = useReactFlow()
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialState.nodes)
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialState.edges)
-  const onConnect = useCallback((params) => setEdges((edgesSnapshot) => addEdge(params, edgesSnapshot)), [])
-
-  // useEffect(() => {
-  //   const { nodes, edges } = load()
-  //   setNodes(nodes)
-  //   setEdges(edges)
-  // }, [])
-
-  // useEffect(() => {
-  //   saveState(nodes, edges)
-  // }, [nodes, edges])
-
-  const isValidConnection = useCallback(
-    (connection) => {
-      const alreadyConnected = edges.some(
-        (edge) => edge.target === connection.target && edge.targetHandle === connection.targetHandle,
-      )
-
-      return !alreadyConnected
-    },
-    [edges],
-  )
-
-  const ref = useRef<HTMLDivElement>(null)
-  const handleAddNode = useCallback((evt: MouseEvent<HTMLButtonElement>) => {
-    if (!ref.current) return
-
-    const bounds = ref.current.getBoundingClientRect()
-    const center = {
-      x: bounds.left + bounds.width / 2,
-      y: bounds.top + bounds.height / 2,
-    }
-    const position = screenToFlowPosition(center)
-
-    const node = {
-      id: crypto.randomUUID(),
-      type: evt.currentTarget.dataset.type,
-      position,
-      data: { value: 0, label: 'New Node' },
-    }
-
-    setNodes((nds) => [...nds, node])
-  }, [])
+  const [tab, setTab] = useState<TabId>('node-editor')
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }} ref={ref}>
-      <UI.Sidebar nodeTypes={Object.keys(nodeTypes)} onAddNode={handleAddNode} />
-      <Panel position="top-right">
-        <Button
-          onClick={() => {
-            save({ nodes, edges })
-          }}
-        >
-          Save
-        </Button>
-      </Panel>
-      <ReactFlow
-        nodes={nodes}
-        edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
-        nodeTypes={nodeTypes}
-        deleteKeyCode="Delete"
-        isValidConnection={isValidConnection}
-        fitView
-        onEdgeDoubleClick={(evt, edge) => {
-          setEdges((eds) => eds.filter((e) => e.id !== edge.id))
-        }}
-      />
-      <Controls />
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
+      <Tabs value={tab} onChange={(value) => setTab(value as TabId)}>
+        <Tabs.List>
+          <Tabs.Tab value="node-editor">Node Editor</Tabs.Tab>
+          <Tabs.Tab value="vertex-text-editor">Vertex Text Editor</Tabs.Tab>
+        </Tabs.List>
+      </Tabs>
+
+      {/* Both tabs stay mounted (toggled via display) so switching back
+          doesn't lose in-progress node graph edits or unsaved shader text. */}
+      <div style={{ flex: 1, minHeight: 0, display: tab === 'node-editor' ? 'block' : 'none' }}>
+        <ReactFlowProvider>
+          <ZustandApp />
+        </ReactFlowProvider>
+      </div>
+      <div
+        style={{ flex: 1, minHeight: 0, display: tab === 'vertex-text-editor' ? 'block' : 'none' }}
+      >
+        <TextEditorApp />
+      </div>
     </div>
   )
 }

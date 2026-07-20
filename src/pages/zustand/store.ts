@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { applyNodeChanges, applyEdgeChanges, addEdge, getOutgoers } from '@xyflow/react'
+import { compileVertexShader } from './shaderCompiler'
 
 const initialNodes = [
   // {
@@ -38,11 +39,37 @@ const initialNodes = [
   //   position: { x: 700, y: 200 },
   //   data: {},
   // },
+  // {
+  //   id: 'boxGeometry-1',
+  //   type: 'boxGeometry',
+  //   position: { x: 0, y: 0 },
+  //   data: {},
+  // },
   {
-    id: 'boxGeometry-1',
-    type: 'boxGeometry',
-    position: { x: 0, y: 0 },
-    data: {},
+    id: 'vsstring-1',
+    type: 'vsstring',
+    position: { x: 450, y: 0 },
+    data: { axis: 'y' },
+  },
+  // GLSL string-builder chain: Time -> Sine Wave -> Vertex Shader (text).
+  // Values flowing along these edges are shader *expression strings*.
+  {
+    id: 'time-1',
+    type: 'time',
+    position: { x: -80, y: 300 },
+    data: { value: 'u_time' },
+  },
+  {
+    id: 'sine-1',
+    type: 'sineWave',
+    position: { x: 150, y: 270 },
+    data: { value: '', amplitude: 0.3, frequency: 1.2 },
+  },
+  {
+    id: 'plane-1',
+    type: 'plane',
+    position: { x: 800, y: 0 },
+    data: { value: '' },
   },
   {
     id: 'vector3-1',
@@ -50,44 +77,47 @@ const initialNodes = [
     position: { x: 0, y: 100 },
     data: { value: { x: 1.1, y: 0.8, z: 5 } },
   },
-  {
-    id: 'vector3-2',
-    type: 'vector3',
-    position: { x: 100, y: -100 },
-    data: { value: { x: 1.1, y: 0.8, z: 5 } },
-  },
-  {
-    id: 'log-1',
-    type: 'log',
-    position: { x: 200, y: 100 },
-    data: {},
-  },
-  {
-    id: 'log-2',
-    type: 'log',
-    position: { x: 200, y: 300 },
-    data: {},
-  },
-  {
-    id: 'vertex-shader-1',
-    type: 'vertexShader',
-    position: { x: 450, y: 0 },
-    data: {
-      value: {
-        cameraPosition: { x: 0, y: 1, z: 1 },
-        boxPosition: { x: 0, y: 1, z: 1 },
-      },
-    },
-  },
+  // {
+  //   id: 'vector3-2',
+  //   type: 'vector3',
+  //   position: { x: 100, y: -100 },
+  //   data: { value: { x: 0.5, y: 0.5, z: 0.5 } },
+  // },
+  // {
+  //   id: 'log-1',
+  //   type: 'log',
+  //   position: { x: 200, y: 100 },
+  //   data: {},
+  // },
+  // {
+  //   id: 'log-2',
+  //   type: 'log',
+  //   position: { x: 200, y: 300 },
+  //   data: {},
+  // },
+  // {
+  //   id: 'vertex-shader-1',
+  //   type: 'vertexShader',
+  //   position: { x: 450, y: 0 },
+  //   data: {
+  //     value: {
+  //       cameraPosition: { x: 0, y: 1, z: 1 },
+  //       boxPosition: { x: 0, y: 1, z: 1 },
+  //     },
+  //   },
+  // },
 ]
 
 const initialEdges = [
-  { id: 'vector3-1-log-1', source: 'vector3-1', target: 'log-1' },
-  { id: 'log-1-vertex-shader-1', source: 'log-1', target: 'vertex-shader-1', targetHandle: 'cameraPosition' },
-  // { id: 'log-1-log-2', source: 'log-1', target: 'log-2' },
-  // { id: 'log-2-log-3', source: 'log-2', target: 'log-3' },
-  // { id: 'log-3-log-4', source: 'log-3', target: 'log-4' },
-  // { id: 'log-4-log-5', source: 'log-4', target: 'log-5' },
+  { id: 'time-1-sine-1', source: 'time-1', target: 'sine-1', targetHandle: 'time' },
+  {
+    id: 'sine-1-vsstring-1',
+    source: 'sine-1',
+    target: 'vsstring-1',
+    targetHandle: 'displacement',
+  },
+  // Feed the assembled shader source into the plane's single (unnamed) input.
+  { id: 'vsstring-1-plane-1', source: 'vsstring-1', target: 'plane-1' },
 ]
 
 // Per-node-type logic: given a node and its incoming values (keyed by the
@@ -96,10 +126,37 @@ const initialEdges = [
 // single unnamed handle, so we key that case under DEFAULT_HANDLE.
 const DEFAULT_HANDLE = '__default__'
 
-function computeValue(node, valuesByHandle) {
+function computeValue(node, valuesByHandle, context) {
   switch (node.type) {
     case 'log':
       return valuesByHandle[DEFAULT_HANDLE] ?? 0 // pass the input straight through unchanged
+    case 'plane':
+      // Receives the assembled vertex shader source on its single unnamed
+      // input and hands it straight to the mesh's ShaderMaterial.
+      return valuesByHandle[DEFAULT_HANDLE] ?? ''
+    case 'sineWave': {
+      // Cosmetic preview only (shown in the node's own UI) — the real
+      // compile happens in compileVertexShader, which re-derives this from
+      // the node's own data rather than trusting this string.
+      const time = valuesByHandle.time ?? 'u_time'
+      const amplitude = node.data.amplitude ?? 1
+      const frequency = node.data.frequency ?? 1
+      return `sin(${time} * ${frequency.toFixed(2)}) * ${amplitude.toFixed(2)}`
+    }
+    case 'uv': {
+      // Change-detection value only, same caveat as sineWave above: the real
+      // codegen (compileVertexShader) reads data.component directly from the
+      // graph. Without *some* data.value that changes when `component` does,
+      // updateComputedNodeData's "did this node change" check would never
+      // fire and a U/V switch would never cascade downstream.
+      const component = node.data.component ?? 'x'
+      return `uv.${component}`
+    }
+    case 'vsstring':
+      // Real compilation: DFS/topological-sort the graph backwards from this
+      // output node so dependencies are always declared before use, and only
+      // the uniforms actually reached by the traversal get declared.
+      return compileVertexShader(context.nodesById, context.edges, node.id)
     case 'vertexShader':
       return {
         cameraPosition: valuesByHandle.cameraPosition ?? { x: 1, y: 1, z: 5 },
@@ -164,6 +221,19 @@ export const useStore = create((set, get) => ({
     get().propagateFrom(nodeId)
   },
 
+  // Like updateNodeData, but for nodes whose output is *computed* from their
+  // own params plus their inputs (e.g. Sine Wave's amplitude/frequency).
+  // Changing a param must recompute the node itself — not just its outgoers —
+  // so we patch the data and then recompute from this node downward.
+  updateComputedNodeData: (nodeId, patch) => {
+    set({
+      nodes: get().nodes.map((n) =>
+        n.id === nodeId ? { ...n, data: { ...n.data, ...patch } } : n,
+      ),
+    })
+    get().recomputeNodes([nodeId])
+  },
+
   // BFS downstream from a changed node. Recomputes that node's outgoers
   // (its own value already changed by the caller). Only nodes actually
   // affected get a new object reference; everything else keeps its old
@@ -187,6 +257,10 @@ export const useStore = create((set, get) => ({
     const { nodes, edges } = get()
     const nodeMap = new Map(nodes.map((n) => [n.id, n]))
     const updated = new Map()
+    // A live view of every node's current data, kept in sync with `updated`
+    // as we go — the shader compiler walks this directly (via edges) rather
+    // than through valuesByHandle, so it always sees this pass's freshest data.
+    const nodesById = new Map(nodeMap)
     const queue = [...nodeIds]
     const visited = new Set()
 
@@ -205,13 +279,12 @@ export const useStore = create((set, get) => ({
         valuesByHandle[e.targetHandle ?? DEFAULT_HANDLE] = src?.data.value
       }
 
-      const newValue = computeValue(currentNode, valuesByHandle)
+      const newValue = computeValue(currentNode, valuesByHandle, { nodesById, edges })
       const changed = newValue !== currentNode.data.value
       if (changed) {
-        updated.set(currentId, {
-          ...currentNode,
-          data: { ...currentNode.data, value: newValue },
-        })
+        const nextNode = { ...currentNode, data: { ...currentNode.data, value: newValue } }
+        updated.set(currentId, nextNode)
+        nodesById.set(currentId, nextNode)
       }
 
       // Only cascade further if this node's value actually changed —

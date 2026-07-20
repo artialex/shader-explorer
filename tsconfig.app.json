@@ -23,5 +23,13 @@
 
     "noFallthroughCasesInSwitch": true,
   },
-  "include": ["src"],
+  // Only the live app is type-checked / built. Legacy experiments under
+  // src/pages and the other src/modules/* folders are intentionally left out.
+  "include": [
+    "src/main.tsx",
+    "src/router.tsx",
+    "src/theme.ts",
+    "src/apps/text-editor",
+    "src/modules/zustand"
+  ],
 }

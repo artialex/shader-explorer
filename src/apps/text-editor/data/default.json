@@ -1,0 +1,54 @@
+{
+  "frag": [
+    {
+      "name": "Based on UV (Requires uv set in Vert)",
+      "shader": "uv.frag"
+    }
+  ],
+  "vert": [
+    {
+      "name": "Low-poly Qunatize (Sphere)",
+      "shader": "low-poly-quantize.vert"
+    },
+    {
+      "name": "Squash & Stretch",
+      "shader": "squash-n-stretch.vert"
+    },
+    {
+      "name": "Spherical Morph",
+      "shader": "spherical-morph.vert"
+    },
+    {
+      "name": "Shimmer",
+      "shader": "shimmer.vert"
+    },
+    {
+      "name": "Wind Sway",
+      "shader": "wind-sway.vert"
+    },
+    {
+      "name": "Ripple",
+      "shader": "ripple.vert"
+    },
+    {
+      "name": "Wobbling (One side)",
+      "shader": "wobbling-one-side.vert"
+    },
+    {
+      "name": "Wobbling (Uniformly)",
+      "shader": "wobbling-uniformly.vert"
+    },
+    {
+      "name": "Waving Flag",
+      "shader": "waving-flag.vert"
+    },
+    {
+      "name": "Twisting",
+      "shader": "twisting.vert"
+    },
+    {
+      "name": "Beating Heart",
+      "shader": "beating-heart.vert"
+    }
+  ]
+}

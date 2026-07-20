@@ -10,6 +10,7 @@ import { NormalizeNode } from './NormalizeNode/NormalizeNode'
 import { FloatNode } from './FloatNode/FloatNode'
 import { VertexShaderOutputNode } from './VertexShaderOutputNode/VertexShaderOutputNode'
 import { MyNode } from '../ui/MyNode/MyNode'
+import { PlaneNode } from '../../pages/zustand/PlaneNode'
 
 export const nodeTypes = {
   color: ColorNode,
@@ -24,4 +25,5 @@ export const nodeTypes = {
   float: FloatNode,
   // vertexShader: VertexShaderOutputNode,
   node: MyNode,
+  plane: PlaneNode,
 }

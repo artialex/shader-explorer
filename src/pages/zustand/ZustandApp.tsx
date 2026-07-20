@@ -11,6 +11,12 @@ import { useIsValidConnection } from '../../modules/flow/useIsValidConnection'
 import { VertexShaderNode } from './VertexShaderNode'
 import { BoxGeometryNode } from './BoxGeometryNode'
 import { Vector3Node } from './Vector3Node'
+import { PlaneNode } from './PlaneNode'
+import { VertexShaderStringNode } from './VertexShaderStringNode'
+import { TimeNode } from './TimeNode'
+import { SineWaveNode } from './SineWaveNode'
+import { UVNode } from './UVNode'
+import { VertexShaderTextNode } from './VertexShaderTextNode'
 
 const nodeTypes = {
   color: ColorNode,
@@ -18,6 +24,12 @@ const nodeTypes = {
   vertexShader: VertexShaderNode,
   boxGeometry: BoxGeometryNode,
   vector3: Vector3Node,
+  plane: PlaneNode,
+  vsstring: VertexShaderStringNode,
+  time: TimeNode,
+  sineWave: SineWaveNode,
+  uv: UVNode,
+  vertexShaderText: VertexShaderTextNode,
 }
 
 export function ZustandApp() {
@@ -58,7 +70,9 @@ export function ZustandApp() {
   }, [])
 
   return (
-    <div style={{ width: '100vw', height: '100vh' }}>
+    <div style={{ width: '100%', height: '100%' }}>
+      <UI.Sidebar nodeTypes={Object.keys(nodeTypes)} onAddNode={handleAddNode} />
+
       <Panel position="top-right">
         <Button
           onClick={() => {
@@ -81,6 +95,7 @@ export function ZustandApp() {
         </Button>
       </Panel>
       <ReactFlow
+        ref={ref}
         nodes={nodes}
         edges={edges}
         onNodesChange={onNodesChange}
@@ -99,8 +114,6 @@ export function ZustandApp() {
 
   return (
     <div style={{ width: '100vw', height: '100vh' }} ref={ref}>
-      <UI.Sidebar nodeTypes={Object.keys(nodeTypes)} onAddNode={handleAddNode} />
-
       <ReactFlow
         nodes={nodes}
         edges={edges}
