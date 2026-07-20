@@ -1,7 +1,9 @@
 uniform float u_time;
 
 void main() {
-    float stretch = 1.0 + sin(u_time * 3.0) * 0.25;
-    vec3 pos = position * vec3(1.0 / sqrt(stretch), stretch, 1.0 / sqrt(stretch));
-    gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);
+    vec3 pos = position;
+    vec3 spherePos = normalize(pos) * 1.3; // same direction, pulled onto a sphere
+    float t = sin(u_time) * 0.5 + 0.5; // oscillates 0..1
+    vec3 morphed = mix(pos, spherePos, t);
+    gl_Position = projectionMatrix * modelViewMatrix * vec4(morphed, 1.0);
 }

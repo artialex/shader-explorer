@@ -15,7 +15,7 @@
       "shader": "squash-n-stretch.vert"
     },
     {
-      "name": "Spherical Morph",
+      "name": "Spherical Morph (Square)",
       "shader": "spherical-morph.vert"
     },
     {
