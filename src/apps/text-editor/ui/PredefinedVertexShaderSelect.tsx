@@ -2,6 +2,15 @@ import predefinedShaders from '../data/default.json' with { type: 'json' }
 import { Select } from '@mantine/core'
 import { useVertShaderStore } from '../state/store'
 
+// Let Vite discover and bundle every .vert at build time. Each entry is a
+// lazy loader keyed by path relative to this file, so the sources resolve in
+// both `dev` and the production build (unlike a `@vite-ignore` dynamic import,
+// which is never bundled and 404s once deployed).
+const vertLoaders = import.meta.glob('../data/vert/*.vert', {
+  query: '?raw',
+  import: 'default',
+}) as Record<string, () => Promise<string>>
+
 export const PredefinedShadersSelect = () => {
   const options = predefinedShaders.vert.map((_) => ({
     value: _.shader,
@@ -14,7 +23,10 @@ export const PredefinedShadersSelect = () => {
   const handleChange = async (value: string | null) => {
     if (!selected || !value) return
 
-    const data = (await import(/* @vite-ignore */ `../data/vert/${value}?raw`)).default
+    const loadShader = vertLoaders[`../data/vert/${value}`]
+    if (!loadShader) return
+
+    const data = await loadShader()
 
     editShaderSource(selected, data)
   }
